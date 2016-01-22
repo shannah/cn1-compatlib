@@ -8,7 +8,7 @@ Apache 2.0
 
 ## Installation
 
-Just add the cn1-compatlib.jar to your Java project's classpath.  Then you can use core codename one APIs directly in your project.
+Just add the [cn1-compatlib.jar](https://github.com/shannah/cn1-compatlib/releases/tag/3.3) to your Java project's classpath.  Then you can use core codename one APIs directly in your project.
 
 ## Status
 

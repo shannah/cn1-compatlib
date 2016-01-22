@@ -4,7 +4,7 @@ This library allows you to develop against portions of the Codename One API from
 
 ## License
 
-Apache 2.0
+GPL with Classpath Exception
 
 ## Installation
 

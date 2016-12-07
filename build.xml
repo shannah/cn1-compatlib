@@ -7,8 +7,12 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project name="CN1-Compatlib" default="default" basedir=".">
+<project name="CN1-Compatlib" default="default" basedir="." xmlns:artifact="antlib:org.apache.maven.artifact.ant">
     <description>Builds, tests, and runs the project CN1-Compatlib.</description>
+    <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.3.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="antlib:org.apache.maven.artifact.ant"
+             classpathref="maven-ant-tasks.classpath" />
     <import file="nbproject/build-impl.xml"/>
     <!--
 
@@ -70,4 +74,13 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-jar" depends="install-maven"></target>
+    <target name="install-maven">
+        
+        <!-- Install Codename One in local maven repo -->
+        <artifact:pom id="Cn1CompatlibPom" file="cn1-compatlib-pom.xml"/>
+        <artifact:install file="dist/CN1-Compatlib.jar">
+            <pom refid="Cn1CompatlibPom"/>
+        </artifact:install>
+    </target>
 </project>

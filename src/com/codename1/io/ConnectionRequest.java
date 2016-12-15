@@ -35,6 +35,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +45,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -309,7 +311,15 @@ public class ConnectionRequest {
         }
 
         private InputStream openInputStream(Object connection) throws IOException {
-            return c(connection).getInputStream();
+            if(connection instanceof HttpURLConnection) {
+                HttpURLConnection ht = (HttpURLConnection)connection;
+                if(ht.getResponseCode() < 400) {
+                    return new BufferedInputStream(ht.getInputStream());
+                }
+                return new BufferedInputStream(ht.getErrorStream());
+            } else {
+                return new BufferedInputStream(((URLConnection) connection).getInputStream());
+            }   
         }
 
         private String[] getHeaderFieldNames(Object connection) {
@@ -818,12 +828,6 @@ public class ConnectionRequest {
                 if(shouldStop()) {
                     return;
                 }
-                //if(input instanceof BufferedInputStream) {
-                //    if(NetworkManager.getInstance().hasProgressListeners()) {
-                //        ((BufferedInputStream)input).setProgressListener(this);
-                //    }
-                //    ((BufferedInputStream)input).setYield(getYield());
-                //}
                 readResponse(input);
                 if(shouldAutoCloseResponse()) {
                     input.close();
@@ -1233,7 +1237,7 @@ public class ConnectionRequest {
 //                    Storage.getInstance().deleteStorageFile(destinationStorage);
 //                }
 //            } else {
-//                data = Util.readInputStream(input);
+                data = com.codename1.io.Util.readInputStream(input);
 //            }
 //        }
         if(hasResponseListeners() && !isKilled()) {
@@ -2154,22 +2158,47 @@ public class ConnectionRequest {
         return result;
     }
     
+    private List<ActionListener> errorListeners;
+    
+    
+    
+    private boolean handleException(ConnectionRequest r, Exception o) {
+        if(errorListeners != null) {
+            ActionEvent ev = new NetworkEvent(r, o);
+            fireActionEvent(errorListeners, ev);
+            //errorListeners.fireActionEvent(ev);
+            return ev.isConsumed();
+        }
+        return false;
+    }
+    
     
     public void addToQueueAndWait() {
-        if (networkExecutor == null) {
-            try {
-                performOperation();
-            } catch (Exception ex) {
-                handleException(ex);
-            }
-        } else {
-            boolean[] complete = new boolean[1];
-            networkExecutor.execute(new Runnable() {
-                public void run() {
+        boolean[] complete = new boolean[1];
+        final Runnable run = new Runnable() {
+            public void run() {
+                    
                     try {
                         performOperation(); 
-                    } catch (Exception ex) {
-                        handleException(ex);
+                    } catch(IOException e) {
+                        if(!isFailSilently()) {
+                            if(!handleException(ConnectionRequest.this, e)) {
+                                handleIOException(e);
+                            }
+                        } else {
+                            // for the record
+                            e.printStackTrace();
+                        }
+                    } catch(RuntimeException er) {
+                        if(!isFailSilently()) {
+                            if(!handleException(ConnectionRequest.this, er)) {
+                                handleRuntimeException(er);
+                            }
+                        } else {
+                            // for the record
+                            er.printStackTrace();
+                        }
+                    
                     } finally {
                         synchronized (complete) {
                             complete[0] = true;
@@ -2177,7 +2206,13 @@ public class ConnectionRequest {
                         }
                     }
                 }
-            });
+        };
+        
+        if (networkExecutor == null) {
+           run.run();
+        } else {
+            
+            networkExecutor.execute(run);
             synchronized(complete) {
                 while (!complete[0]) {
                     try {

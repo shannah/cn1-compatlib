@@ -28,22 +28,10 @@ package com.codename1.payment;
  * @author Shai Almog
  */
 public class Product {
-
-    
-    public static enum SubscriptionPeriodUnit {
-        DAYS,
-        WEEKS,
-        MONTHS,
-        YEARS
-    }
-    
     private String displayName;
     private String description;
     private String localizedPrice;
     private String sku;
-    private boolean subscription;
-    private int subscriptionPeriod;
-    private SubscriptionPeriodUnit subscriptionPeriodUnits;
 
     /**
      * @return the displayName
@@ -99,48 +87,6 @@ public class Product {
      */
     public void setSku(String sku) {
         this.sku = sku;
-    }
-    
-    /**
-     * @return the subscription
-     */
-    private boolean isSubscription() {
-        return subscription;
-    }
-
-    /**
-     * @param subscription the subscription to set
-     */
-    private void setSubscription(boolean subscription) {
-        this.subscription = subscription;
-    }
-
-    /**
-     * @return the subscriptionPeriod
-     */
-    private int getSubscriptionPeriod() {
-        return subscriptionPeriod;
-    }
-
-    /**
-     * @param subscriptionPeriod the subscriptionPeriod to set
-     */
-    private void setSubscriptionPeriod(int subscriptionPeriod) {
-        this.subscriptionPeriod = subscriptionPeriod;
-    }
-
-    /**
-     * @return the subscriptionPeriodUnits
-     */
-    private SubscriptionPeriodUnit getSubscriptionPeriodUnits() {
-        return subscriptionPeriodUnits;
-    }
-
-    /**
-     * @param subscriptionPeriodUnits the subscriptionPeriodUnits to set
-     */
-    private void setSubscriptionPeriodUnits(SubscriptionPeriodUnit subscriptionPeriodUnits) {
-        this.subscriptionPeriodUnits = subscriptionPeriodUnits;
     }
     
 }
